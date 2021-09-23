@@ -1,12 +1,9 @@
-from os import listdir
-import matplotlib.pyplot as plt
-import pandas as pd
 from typing import Dict, List, Tuple
 
 import albumentations as A
+import cv2
 import numpy as np
 import pytorch_lightning as pl
-from PIL import Image
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
@@ -42,21 +39,21 @@ typical_transforms = {
 
 
 class Leaf(Dataset):
-    def __init__(self, img_paths: List[str], mask_paths: List[str], transforms: A.Compose = None):
+    def __init__(self, img_paths: List[str], mask_paths: List[str], transform: A.Compose = None):
         self.img_paths = img_paths
         self.mask_paths = mask_paths
-        self.transforms = transforms
+        self.transform = transform
 
     def __len__(self) -> int:
         return len(self.img_paths)
 
     def __getitem__(self, sample) -> Tuple[np.ndarray, np.ndarray]:
-        image = Image.open(self.img_paths[sample])
-        mask = Image.open(self.mask_paths[sample])
-        image, mask = np.array(image), np.array(mask)
+        image = cv2.imread(self.img_paths[sample])
+        mask = cv2.imread(self.mask_paths[sample], cv2.IMREAD_GRAYSCALE)
+        _, mask = cv2.threshold(mask, 0, 1, cv2.THRESH_BINARY)
 
-        if self.transforms:
-            augmented = self.transforms(image=image, mask=mask)
+        if self.transform:
+            augmented = self.transform(image=image, mask=mask)
             image = augmented['image']
             mask = augmented['mask']
 
@@ -64,32 +61,34 @@ class Leaf(Dataset):
 
 
 class LeafDataModule(pl.LightningDataModule):
-    # def __init__(self, img_paths: str, mask_paths:str, transforms: Dict[str, A.Compose] = typical_transforms, bs: Tuple[int, int, int]):
-    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = typical_transforms, bs: Tuple[int, int, int] = (32, 20, 20)):
+    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = typical_transforms, bs: Tuple[int, int, int] = (32, 50, 55)):
         super().__init__()
         self.dirpath = dirpath
-        # self.img_paths = img_paths
-        # self.mask_paths = mask_paths
         self.transforms = transforms
         self.bs = bs
 
-    # def prepare_data(self) -> None:
-    #     pass
-
     def setup(self) -> None:
+        img_paths = {}
+        mask_paths = {}
 
-
-
-        filenames = {}
-        filenames['train'], filenames['test'] = train_test_split(listdir(self.img_path), test_size=0.1)
-        filenames['train'], filenames['val'] = train_test_split(filenames['train'], test_size=0.1)
-
+        img_paths['train'], img_paths['test'], mask_paths['train'], mask_paths['test'] = train_test_split(
+            get_img_mask_paths(self.dirpath, 'images'),
+            get_img_mask_paths(self.dirpath, 'masks'),
+            test_size=0.1,
+            random_state=17
+        )
+        img_paths['train'], img_paths['val'], mask_paths['train'], mask_paths['val'] = train_test_split(
+            img_paths['train'],
+            mask_paths['train'],
+            test_size=0.1,
+            random_state=17,
+        )
+        
         self.datasets = {
             fold: Leaf(
-                img_paths=get_img_mask_paths(self.dirpath, 'images'),
-                mask_paths=get_img_mask_paths(self.dirpath, 'masks'),
-                transforms=self.transforms[fold]
-     
+                img_paths=img_paths[fold],
+                mask_paths=mask_paths[fold],
+                transform=self.transforms[fold]
             )
             for fold in ["train", "val", "test"]
         }
@@ -111,23 +110,3 @@ class LeafDataModule(pl.LightningDataModule):
     def test_dataloader(self) -> DataLoader:
         test = DataLoader(self.datasets['test'], batch_size=self.bs[2], shuffle=False)
         return test
-
-
-
-a = LeafDataModule()
-
-
-
-# sizes_1 = []
-# sizes_2 = []
-# for img_path in listdir('C:/Users/Eduard_Kustov/Desktop/learn/CV/segmentation/data/masks/'):
-#     image = Image.open('C:/Users/Eduard_Kustov/Desktop/learn/CV/segmentation/data/masks/' + img_path)
-#     sizes_2.append([img_path, image.size[0], image.size[1]])
-
-
-# df = pd.DataFrame(sizes_1)
-# df2 = pd.DataFrame(sizes_2)
-
-# df.shape
-# df[(df[1] > 255) | (df[2] > 255)]
-

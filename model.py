@@ -1,24 +1,23 @@
+from typing import Tuple
+
 import pytorch_lightning as pl
 import segmentation_models_pytorch as smp
-import torchmetrics  # TODO будет в __init__() lightning
-# from segmentation_models_pytorch.utils.losses import JaccardLoss
+import torch
 from segmentation_models_pytorch.losses import JaccardLoss
 from torch.optim import Adam
+from torchmetrics.classification.iou import IoU
 
-#TODO сделать через Hydra или Gin-config (подавать строки, а не классы в params)
-#TODO kwargs
+from config import N_CLASSES
 
 model = smp.DeepLabV3Plus(
     encoder_name='resnet101',
     encoder_weights='imagenet',
-    # activation='softmax', #TODO нам нужны логиты
     in_channels=3,
-    classes=30,
+    classes=N_CLASSES,
 )
 
-
 class LeafModule(pl.LightningModule):
-    def __init__(self, model=model, optimizer=Adam, lr=1e-3, loss=JaccardLoss, metric=None, n_classes=None):
+    def __init__(self, model=model, n_classes=None, optimizer=Adam, lr=1e-3, loss=JaccardLoss(mode='multiclass'), metric=IoU):
         super().__init__()
         self.model = model
         self.optimizer = optimizer
@@ -26,46 +25,35 @@ class LeafModule(pl.LightningModule):
         self.loss = loss
         self.metric = metric
         self.n_classes = n_classes
-        # pass
 
-    def forward(self): #TODO нужен ли?
-        pass
+    def forward(self, images: torch.Tensor) -> torch.Tensor:
+        images = images.permute(0, 3, 1, 2)
+        logits = self.model(images)
+        return logits
+
+    def training_step(self, train_batch: torch.Tensor, batch_idx) -> torch.Tensor:
+        train_loss, train_metric = self.step(train_batch)
+        self.log('train', {'loss': train_loss, 'metric': train_metric})
+        return train_loss
+
+    def validation_step(self, val_batch: torch.Tensor, batch_idx) -> torch.Tensor:
+        val_loss, val_metric = self.step(val_batch)
+        self.log('val', {'loss': val_loss, 'metric': val_metric})
+        return val_loss
+
+    def test_step(self, test_batch: torch.Tensor, batch_idx) -> torch.Tensor:
+        test_loss, test_metric = self.step(test_batch)
+        self.log('test', {'loss': test_loss, 'metric': test_metric})
+        return test_loss
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(self.parameters, self.lr)
+        optimizer = self.optimizer(self.parameters(), lr=self.lr)
         return optimizer
 
-    def training_step(self, train_batch): #TODO add batch_idx?!?!
-        images, masks = train_batch
-        logits = self.model(images)
-        loss = self.loss()
-
-        pass
-        # return loss
-
-    def validation_step(self, val_batch, batch_idx):
-        pass
-        # return loss
-
-
-import torch
-from segmentation_models_pytorch.losses import JaccardLoss
-pred = torch.rand(10, 256, 256, dtype=torch.float32)
-true = torch.rand(10, 256, 256, dtype=torch.float32)
-loss = JaccardLoss(mode='multiclass')
-loss(pred, true)
-
-
-loss = JaccardLoss(mode='binary')
-output = model(torch.rand(10, 3, 256, 256))
-
-
-
-
-loss(output, true)
-output.size()
-
-output.log_softmax(dim=1).exp().size()
-
-true.view(10, -1).size()
-output.view(10, 30, ).size()
+    def step(self, batch: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+        images, masks = batch
+        logits = self(images)
+        loss = self.loss(logits, masks)
+        metric = self.metric(self.n_classes) #too much time
+        metric = metric(logits, masks)
+        return loss, metric

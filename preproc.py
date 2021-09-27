@@ -7,8 +7,7 @@ import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
-from config import *
-from utils import *
+from utils import get_img_mask_paths
 
 
 typical_transforms = {
@@ -51,6 +50,7 @@ class Leaf(Dataset):
         image = cv2.imread(self.img_paths[sample])
         mask = cv2.imread(self.mask_paths[sample], cv2.IMREAD_GRAYSCALE)
         _, mask = cv2.threshold(mask, 0, 1, cv2.THRESH_BINARY)
+        mask = mask.astype('int64')
 
         if self.transform:
             augmented = self.transform(image=image, mask=mask)
@@ -67,7 +67,7 @@ class LeafDataModule(pl.LightningDataModule):
         self.transforms = transforms
         self.bs = bs
 
-    def setup(self) -> None:
+    def setup(self, stage) -> None:
         img_paths = {}
         mask_paths = {}
 

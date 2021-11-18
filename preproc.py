@@ -2,39 +2,14 @@ from typing import Dict, List, Tuple
 
 import albumentations as A
 import cv2
+import gin
 import numpy as np
 import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
+from config import TRANSFORMS
 from utils import get_img_mask_paths
-
-
-typical_transforms = {
-    'train': A.Compose(
-        [
-            A.SmallestMaxSize(256),
-            A.CenterCrop(256, 256),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.1),
-            A.Rotate(limit=90),
-            A.Normalize()
-        ]),
-    'val': A.Compose(
-        [
-            A.SmallestMaxSize(256),
-            A.CenterCrop(256, 256),
-            A.Normalize()
-        ]),
-    'test': A.Compose(
-        [
-            A.SmallestMaxSize(256),
-            A.CenterCrop(256, 256),
-            A.Normalize()
-        ]
-    )
-}
 
 
 class Leaf(Dataset):
@@ -59,9 +34,9 @@ class Leaf(Dataset):
 
         return image, mask
 
-
+@gin.configurable
 class LeafDataModule(pl.LightningDataModule):
-    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = typical_transforms, bs: Tuple[int, int, int] = (32, 50, 55)):
+    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = TRANSFORMS, bs: Tuple[int, int, int] = (32, 50, 55)):
         super().__init__()
         self.dirpath = dirpath
         self.transforms = transforms

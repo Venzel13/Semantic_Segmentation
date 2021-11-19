@@ -22,29 +22,30 @@ class LeafModule(pl.LightningModule):
 
     def training_step(self, train_batch: torch.Tensor, batch_idx) -> None:
         loss, metric = self.step(train_batch)
-        # self.log('train', {'loss': train_loss, 'metric': train_metric})
+        self.log('train_loss', loss)
+        self.log('train_metric', metric)
 
     def validation_step(self, val_batch: torch.Tensor, batch_idx) -> None:
         loss, metric = self.step(val_batch)
-        # self.log('val', {'loss': val_loss, 'metric': val_metric})
+        self.log('val_loss', loss)
+        self.log('val_metric', metric)
 
     def test_step(self, test_batch: torch.Tensor, batch_idx) -> None:
         loss, metric = self.step(test_batch)
-        # self.log('test', {'loss': test_loss, 'metric': test_metric})
+        self.log('test_loss', loss)
+        self.log('test_metric', metric)
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.lr)
+        #TODO LR scheduler ReduceLROnPlateau
         return optimizer
 
     def step(self, batch: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         images, masks = batch
         logits = self(images)
-        loss = self.loss(logits, masks)
+        loss = self.loss(logits, masks)#.item()
         metric = self.metric(self.n_classes)
         pred_class = logits.argmax(1)
-        metric = metric(pred_class, masks)
+        metric = metric(pred_class, masks)#.item()
         
         return loss, metric
-
-
-

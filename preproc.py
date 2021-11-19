@@ -8,7 +8,7 @@ import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
-from config import TRANSFORMS
+from config import TRANSFORMS, BATCH_SIZE
 from utils import get_img_mask_paths
 
 
@@ -34,9 +34,9 @@ class Leaf(Dataset):
 
         return image, mask
 
-@gin.configurable
+
 class LeafDataModule(pl.LightningDataModule):
-    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = TRANSFORMS, bs: Tuple[int, int, int] = (32, 50, 55)):
+    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = TRANSFORMS, bs: Tuple[int, int, int] = BATCH_SIZE):
         super().__init__()
         self.dirpath = dirpath
         self.transforms = transforms

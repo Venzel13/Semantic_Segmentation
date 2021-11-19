@@ -4,8 +4,17 @@ from segmentation_models_pytorch.losses import JaccardLoss
 from torch.optim import Adam
 from torchmetrics.classification.iou import IoU
 
-DIR_PATH = 'C:/Users/Eduard_Kustov/Desktop/learn/CV/segmentation/data/'
 
+# TODO gin-config (gin.register, gin external configurable)
+DIR_PATH = 'C:/Users/Eduard_Kustov/Desktop/learn/CV/segmentation/data/'
+BATCH_SIZE = (32, 50, 55)
+TEST_TRANSFORMS = A.Compose(
+    [
+        A.SmallestMaxSize(256),
+        A.CenterCrop(256, 256),
+        A.Normalize()
+    ]
+)
 TRANSFORMS = {
     'train': A.Compose(
         [
@@ -17,21 +26,9 @@ TRANSFORMS = {
             A.Rotate(limit=90),
             A.Normalize()
         ]),
-    'val': A.Compose(
-        [
-            A.SmallestMaxSize(256),
-            A.CenterCrop(256, 256),
-            A.Normalize()
-        ]),
-    'test': A.Compose(
-        [
-            A.SmallestMaxSize(256),
-            A.CenterCrop(256, 256),
-            A.Normalize()
-        ]
-    )
+    'val': TEST_TRANSFORMS,
+    'test': TEST_TRANSFORMS
 }
-
 N_CLASSES = 2
 N_CHANNELS = 3
 ENCODER_NAME = 'resnet101'
@@ -45,6 +42,3 @@ OPTIMIZER = Adam
 LR = 1e-3
 LOSS = JaccardLoss(mode='multiclass')
 METRIC = IoU
-
-# TODO gin-config (gin.register, gin external configurable)
-# TODO добавить callbacks early stopping, lr_scheduler (или его в configure_optimizer)

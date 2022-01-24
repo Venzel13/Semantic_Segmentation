@@ -25,7 +25,6 @@ class Leaf(Dataset):
         image = cv2.imread(self.img_paths[sample])
         mask = cv2.imread(self.mask_paths[sample], cv2.IMREAD_GRAYSCALE)
         _, mask = cv2.threshold(mask, 0, 1, cv2.THRESH_BINARY)
-        mask = mask.astype('int64')
 
         if self.transform:
             augmented = self.transform(image=image, mask=mask)

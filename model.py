@@ -2,18 +2,17 @@ from typing import Tuple
 
 import pytorch_lightning as pl
 import torch
-from config import MODEL, N_CLASSES, OPTIMIZER, LR, LOSS, METRIC
+from config import MODEL, OPTIMIZER, LR, LOSS, METRIC
 
 
 class LeafModule(pl.LightningModule):
-    def __init__(self, model=MODEL,  n_classes=N_CLASSES, optimizer=OPTIMIZER, lr=LR, loss=LOSS, metric=METRIC):
+    def __init__(self, model=MODEL, optimizer=OPTIMIZER, lr=LR, loss=LOSS, metric=METRIC):
         super().__init__()
         self.model = model
         self.optimizer = optimizer
         self.lr = lr
         self.loss = loss
         self.metric = metric
-        self.n_classes = n_classes
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         images = images.permute(0, 3, 1, 2)
@@ -42,10 +41,10 @@ class LeafModule(pl.LightningModule):
 
     def step(self, batch: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         images, masks = batch
+        masks = masks.long()
         logits = self(images)
-        loss = self.loss(logits, masks)#.item()
-        metric = self.metric(self.n_classes)
+        loss = self.loss(logits, masks)
         pred_class = logits.argmax(1)
-        metric = metric(pred_class, masks)#.item()
+        metric = self.metric(pred_class, masks)
         
         return loss, metric

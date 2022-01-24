@@ -41,4 +41,4 @@ MODEL = smp.DeepLabV3Plus(
 OPTIMIZER = Adam
 LR = 1e-3
 LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
-METRIC = IoU
+METRIC = IoU(num_classes=N_CLASSES)

@@ -3,10 +3,10 @@ from pytorch_lightning.callbacks import EarlyStopping
 
 from model import LeafModule
 from preproc import LeafDataModule
-from config import DIR_PATH, N_CLASSES
+from config import DIR_PATH
 
 
-model = LeafModule(n_classes=N_CLASSES)
+model = LeafModule()
 data = LeafDataModule(DIR_PATH)
 trainer = pl.Trainer(
     callbacks = [EarlyStopping('val_loss')],

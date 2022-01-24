@@ -1,6 +1,6 @@
 import albumentations as A
 import segmentation_models_pytorch as smp
-from segmentation_models_pytorch.losses import JaccardLoss
+from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 from torch.optim import Adam
 from torchmetrics.classification.iou import IoU
 
@@ -40,5 +40,5 @@ MODEL = smp.DeepLabV3Plus(
 )
 OPTIMIZER = Adam
 LR = 1e-3
-LOSS = JaccardLoss(mode='multiclass')
+LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
 METRIC = IoU

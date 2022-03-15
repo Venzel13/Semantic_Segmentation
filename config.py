@@ -6,7 +6,7 @@ from torchmetrics.classification.iou import IoU
 
 
 # TODO gin-config (gin.register, gin external configurable)
-DIR_PATH = 'C:/Users/Eduard_Kustov/Desktop/learn/CV/segmentation/data/'
+DIR_PATH = '/home/eduard_kustov/data/'
 BATCH_SIZE = (32, 50, 55)
 TEST_TRANSFORMS = A.Compose(
     [
@@ -39,6 +39,6 @@ MODEL = smp.DeepLabV3Plus(
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
-LR = 1e-3
+LR = 1e-2
 LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
 METRIC = IoU(num_classes=N_CLASSES)

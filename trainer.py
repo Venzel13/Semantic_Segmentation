@@ -9,7 +9,8 @@ from config import DIR_PATH
 model = LeafModule()
 data = LeafDataModule(DIR_PATH)
 trainer = pl.Trainer(
+    gpus=1,
     callbacks = [EarlyStopping('val_loss')],
-    log_every_n_steps = 1,
+    # log_every_n_steps = 1,
 )
 trainer.fit(model, data)

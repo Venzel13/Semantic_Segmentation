@@ -1,13 +1,14 @@
 import albumentations as A
 import segmentation_models_pytorch as smp
-from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
+from segmentation_models_pytorch.losses import DiceLoss, FocalLoss, SoftCrossEntropyLoss
 from torch.optim import Adam
 from torchmetrics.classification.iou import IoU
+from torch.nn import CrossEntropyLoss
 
 
 # TODO gin-config (gin.register, gin external configurable)
-DIR_PATH = '/home/eduard_kustov/data/'
-BATCH_SIZE = (32, 50, 55)
+DIR_PATH = '/home/eduard_kustov/one_batch/'
+BATCH_SIZE = (23, 23, 23)
 TEST_TRANSFORMS = A.Compose(
     [
         A.SmallestMaxSize(256),
@@ -16,16 +17,7 @@ TEST_TRANSFORMS = A.Compose(
     ]
 )
 TRANSFORMS = {
-    'train': A.Compose(
-        [
-            A.SmallestMaxSize(256),
-            A.CenterCrop(256, 256),
-            A.HorizontalFlip(p=0.5),
-            A.VerticalFlip(p=0.5),
-            A.RandomBrightnessContrast(p=0.1),
-            A.Rotate(limit=90),
-            A.Normalize()
-        ]),
+    'train': TEST_TRANSFORMS,
     'val': TEST_TRANSFORMS,
     'test': TEST_TRANSFORMS
 }
@@ -39,6 +31,6 @@ MODEL = smp.DeepLabV3Plus(
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
-LR = 1e-2
+LR = 1e-5
 LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
 METRIC = IoU(num_classes=N_CLASSES)

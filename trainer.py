@@ -10,7 +10,8 @@ model = LeafModule()
 data = LeafDataModule(DIR_PATH)
 trainer = pl.Trainer(
     gpus=1,
-    callbacks = [EarlyStopping('val_loss')],
-    # log_every_n_steps = 1,
+    callbacks = [EarlyStopping('val_loss', patience=20)],
+    detect_anomaly=True,
+    log_every_n_steps = 1,
 )
 trainer.fit(model, data)

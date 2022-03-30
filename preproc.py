@@ -42,30 +42,39 @@ class LeafDataModule(pl.LightningDataModule):
         self.bs = bs
 
     def setup(self, stage) -> None:
-        img_paths = {}
-        mask_paths = {}
+        # img_paths = {}
+        # mask_paths = {}
 
-        img_paths['train'], img_paths['test'], mask_paths['train'], mask_paths['test'] = train_test_split(
-            get_img_mask_paths(self.dirpath, 'images'),
-            get_img_mask_paths(self.dirpath, 'masks'),
-            test_size=0.1,
-            random_state=17
-        )
-        img_paths['train'], img_paths['val'], mask_paths['train'], mask_paths['val'] = train_test_split(
-            img_paths['train'],
-            mask_paths['train'],
-            test_size=0.1,
-            random_state=17,
-        )
+        # img_paths['train'], img_paths['test'], mask_paths['train'], mask_paths['test'] = train_test_split(
+        #     get_img_mask_paths(self.dirpath, 'images'),
+        #     get_img_mask_paths(self.dirpath, 'masks'),
+        #     test_size=0.1,
+        #     random_state=17
+        # )
+        # img_paths['train'], img_paths['val'], mask_paths['train'], mask_paths['val'] = train_test_split(
+        #     img_paths['train'],
+        #     mask_paths['train'],
+        #     test_size=0.1,
+        #     random_state=17,
+        # )
         
+        # self.datasets = {
+        #     fold: Leaf(
+        #         img_paths=img_paths[fold],
+        #         mask_paths=mask_paths[fold],
+        #         transform=self.transforms[fold]
+        #     )
+        #     for fold in ["train", "val", "test"]
+        # }
         self.datasets = {
             fold: Leaf(
-                img_paths=img_paths[fold],
-                mask_paths=mask_paths[fold],
+                img_paths=get_img_mask_paths(self.dirpath, 'images'),
+                mask_paths=get_img_mask_paths(self.dirpath, 'masks'),
                 transform=self.transforms[fold]
             )
             for fold in ["train", "val", "test"]
         }
+        
 
     def train_dataloader(self) -> DataLoader:
         train = DataLoader(

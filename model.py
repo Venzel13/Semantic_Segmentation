@@ -1,5 +1,6 @@
 from typing import Tuple
 
+import gin
 import pytorch_lightning as pl
 import torch
 from config import MODEL, OPTIMIZER, LR, LOSS, METRIC
@@ -19,10 +20,11 @@ class LeafModule(pl.LightningModule):
         logits = self.model(images)
         return logits
 
-    def training_step(self, train_batch: torch.Tensor, batch_idx) -> None:
+    def training_step(self, train_batch: torch.Tensor, batch_idx) -> torch.Tensor:
         loss, metric = self.step(train_batch)
         self.log('train_loss', loss)
         self.log('train_metric', metric)
+        return loss
 
     def validation_step(self, val_batch: torch.Tensor, batch_idx) -> None:
         loss, metric = self.step(val_batch)

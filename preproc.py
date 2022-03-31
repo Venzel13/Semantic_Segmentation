@@ -1,4 +1,4 @@
-from typing import Dict, List, Tuple
+from typing import Dict, Tuple, Optional
 
 import albumentations as A
 import cv2
@@ -13,7 +13,7 @@ from utils import get_img_mask_paths
 
 
 class Leaf(Dataset):
-    def __init__(self, img_paths: List[str], mask_paths: List[str], transform: A.Compose = None):
+    def __init__(self, img_paths: np.ndarray, mask_paths: np.ndarray, transform: Optional[A.Compose] = None):
         self.img_paths = img_paths
         self.mask_paths = mask_paths
         self.transform = transform

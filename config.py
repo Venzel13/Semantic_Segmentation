@@ -1,13 +1,12 @@
 import albumentations as A
 import segmentation_models_pytorch as smp
-from segmentation_models_pytorch.losses import DiceLoss, FocalLoss, SoftCrossEntropyLoss
+from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 from torch.optim import Adam
 from torchmetrics.classification.iou import IoU
-from torch.nn import CrossEntropyLoss
 
 
 # TODO gin-config (gin.register, gin external configurable)
-DIR_PATH = '/home/eduard_kustov/one_batch/'
+DIR_PATH = "C:/Users/Eduard_Kustov/Desktop/ML/learn/CV/segmentation/one_batch/"
 BATCH_SIZE = (23, 23, 23)
 TEST_TRANSFORMS = A.Compose(
     [
@@ -31,6 +30,6 @@ MODEL = smp.DeepLabV3Plus(
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
-LR = 1e-5
+LR = 1e-2
 LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
 METRIC = IoU(num_classes=N_CLASSES)

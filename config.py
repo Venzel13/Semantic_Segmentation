@@ -4,10 +4,14 @@ from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 from torch.optim import Adam
 from torchmetrics.classification.iou import IoU
 
+#TODO add predict and anothers steps into model
+#TODO optimizer plateue
+
+
 
 # TODO gin-config (gin.register, gin external configurable)
-DIR_PATH = "C:/Users/Eduard_Kustov/Desktop/ML/learn/CV/segmentation/one_batch/"
-BATCH_SIZE = (23, 23, 23)
+DIR_PATH = "/home/eduard_kustov/data/"
+BATCH_SIZE = (37, 50, 55)
 TEST_TRANSFORMS = A.Compose(
     [
         A.SmallestMaxSize(256),
@@ -16,7 +20,16 @@ TEST_TRANSFORMS = A.Compose(
     ]
 )
 TRANSFORMS = {
-    'train': TEST_TRANSFORMS,
+    'train': A.Compose(
+        [
+            A.SmallestMaxSize(256),
+            A.CenterCrop(256, 256),
+            A.HorizontalFlip(p=0.5),
+            A.VerticalFlip(p=0.5),
+            A.RandomBrightnessContrast(p=0.1),
+            A.Rotate(limit=90),
+            A.Normalize()
+        ]),
     'val': TEST_TRANSFORMS,
     'test': TEST_TRANSFORMS
 }
@@ -30,6 +43,6 @@ MODEL = smp.DeepLabV3Plus(
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
-LR = 1e-2
+LR = 1e-3
 LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
 METRIC = IoU(num_classes=N_CLASSES)

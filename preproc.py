@@ -42,54 +42,45 @@ class LeafDataModule(pl.LightningDataModule):
         self.bs = bs
 
     def setup(self, stage) -> None:
-        # img_paths = {}
-        # mask_paths = {}
+        img_paths = {}
+        mask_paths = {}
 
-        # img_paths['train'], img_paths['test'], mask_paths['train'], mask_paths['test'] = train_test_split(
-        #     get_img_mask_paths(self.dirpath, 'images'),
-        #     get_img_mask_paths(self.dirpath, 'masks'),
-        #     test_size=0.1,
-        #     random_state=17
-        # )
-        # img_paths['train'], img_paths['val'], mask_paths['train'], mask_paths['val'] = train_test_split(
-        #     img_paths['train'],
-        #     mask_paths['train'],
-        #     test_size=0.1,
-        #     random_state=17,
-        # )
-        
-        # self.datasets = {
-        #     fold: Leaf(
-        #         img_paths=img_paths[fold],
-        #         mask_paths=mask_paths[fold],
-        #         transform=self.transforms[fold]
-        #     )
-        #     for fold in ["train", "val", "test"]
-        # }
+        img_paths['train'], img_paths['test'], mask_paths['train'], mask_paths['test'] = train_test_split(
+            get_img_mask_paths(self.dirpath, 'images'),
+            get_img_mask_paths(self.dirpath, 'masks'),
+            test_size=0.1,
+            random_state=17
+        )
+        img_paths['train'], img_paths['val'], mask_paths['train'], mask_paths['val'] = train_test_split(
+            img_paths['train'],
+            mask_paths['train'],
+            test_size=0.1,
+            random_state=17,
+        )
         self.datasets = {
             fold: Leaf(
-                img_paths=get_img_mask_paths(self.dirpath, 'images'),
-                mask_paths=get_img_mask_paths(self.dirpath, 'masks'),
+                img_paths=img_paths[fold],
+                mask_paths=mask_paths[fold],
                 transform=self.transforms[fold]
             )
             for fold in ["train", "val", "test"]
         }
         
-
     def train_dataloader(self) -> DataLoader:
         train = DataLoader(
             self.datasets['train'],
             batch_size=self.bs[0],
             shuffle=True,
             drop_last=True,
-            pin_memory=True
+            pin_memory=True,
+            num_workers=16 #TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         )
         return train
 
     def val_dataloader(self) -> DataLoader:
-        val = DataLoader(self.datasets['val'], batch_size=self.bs[1], shuffle=False)
+        val = DataLoader(self.datasets['val'], batch_size=self.bs[1], shuffle=False, num_workers=16)
         return val
 
     def test_dataloader(self) -> DataLoader:
-        test = DataLoader(self.datasets['test'], batch_size=self.bs[2], shuffle=False)
+        test = DataLoader(self.datasets['test'], batch_size=self.bs[2], shuffle=False, num_workers=16)
         return test

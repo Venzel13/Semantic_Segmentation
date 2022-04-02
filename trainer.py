@@ -9,9 +9,15 @@ from config import DIR_PATH
 model = LeafModule()
 data = LeafDataModule(DIR_PATH)
 trainer = pl.Trainer(
-    gpus=1,
+    # gpus=1,
     callbacks = [EarlyStopping('val_loss', patience=5)],
     detect_anomaly=True,
     log_every_n_steps = 1,
 )
 trainer.fit(model, data)
+
+# trainer.test(model, data) #automatically load best_model #or choose best_path!!!
+
+#TODO predict_step возможно надо добавить в LeafDataModule
+
+# from argparse import ArgumentParser

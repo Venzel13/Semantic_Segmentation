@@ -73,14 +73,33 @@ class LeafDataModule(pl.LightningDataModule):
             shuffle=True,
             drop_last=True,
             pin_memory=True,
-            num_workers=16 #TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+            num_workers=16 #TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!! multiprocessing.cpu_count()
         )
         return train
 
     def val_dataloader(self) -> DataLoader:
-        val = DataLoader(self.datasets['val'], batch_size=self.bs[1], shuffle=False, num_workers=16)
+        val = DataLoader(
+            self.datasets['val'],
+            batch_size=self.bs[1],
+            shuffle=False,
+            num_workers=16
+        )
         return val
 
     def test_dataloader(self) -> DataLoader:
-        test = DataLoader(self.datasets['test'], batch_size=self.bs[2], shuffle=False, num_workers=16)
+        test = DataLoader(
+            self.datasets['test'],
+            batch_size=self.bs[2],
+            shuffle=False,
+            num_workers=16
+        )
         return test
+
+    def predict_dataloader(self) -> DataLoader:
+        predict = DataLoader(
+            self.datasets['test'],
+            batch_size=self.bs[2],
+            shuffle=False,
+            num_workers=16
+        )
+        return predict

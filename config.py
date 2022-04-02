@@ -2,6 +2,7 @@ import albumentations as A
 import segmentation_models_pytorch as smp
 from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 from torch.optim import Adam
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchmetrics.classification.iou import IoU
 
 #TODO add predict and anothers steps into model
@@ -43,6 +44,7 @@ MODEL = smp.DeepLabV3Plus(
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
-LR = 1e-3
+LR = 1e-2
 LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
 METRIC = IoU(num_classes=N_CLASSES)
+SCHEDULER = ReduceLROnPlateau

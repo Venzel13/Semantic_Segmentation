@@ -3,17 +3,18 @@ from typing import Tuple
 import gin
 import pytorch_lightning as pl
 import torch
-from config import MODEL, OPTIMIZER, LR, LOSS, METRIC
+from config import MODEL, OPTIMIZER, LR, LOSS, METRIC, SCHEDULER
 
 
 class LeafModule(pl.LightningModule):
-    def __init__(self, model=MODEL, optimizer=OPTIMIZER, lr=LR, loss=LOSS, metric=METRIC):
+    def __init__(self, model=MODEL, lr=LR, loss=LOSS, metric=METRIC, optimizer=OPTIMIZER, scheduler=SCHEDULER):
         super().__init__()
         self.model = model
-        self.optimizer = optimizer
         self.lr = lr
         self.loss = loss
         self.metric = metric
+        self.optimizer = optimizer
+        self.scheduler = scheduler
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         images = images.permute(0, 3, 1, 2)
@@ -36,10 +37,15 @@ class LeafModule(pl.LightningModule):
         self.log('test_loss', loss)
         self.log('test_metric', metric)
 
+    # def predict_step(self, predict_batch: torch.Tensor, batch_idx) -> torch.Tensor:
+    #     images, _ = predict_batch
+    #     pred = self(images)
+    #     return pred
+
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.lr)
-        #TODO LR scheduler ReduceLROnPlateau
-        return optimizer
+        lr_scheduler = self.scheduler(optimizer) #TODO config with params for each param **kwargs
+        return optimizer, lr_scheduler
 
     def step(self, batch: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         images, masks = batch

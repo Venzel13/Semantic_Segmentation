@@ -37,10 +37,10 @@ class LeafModule(pl.LightningModule):
         self.log('test_loss', loss)
         self.log('test_metric', metric)
 
-    # def predict_step(self, predict_batch: torch.Tensor, batch_idx) -> torch.Tensor:
-    #     images, _ = predict_batch
-    #     pred = self(images)
-    #     return pred
+    def predict_step(self, predict_batch: torch.Tensor, batch_idx) -> torch.Tensor:
+        images, masks = predict_batch
+        pred = self(images)
+        return pred, masks
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.lr)

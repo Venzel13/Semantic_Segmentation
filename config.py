@@ -1,16 +1,14 @@
 import albumentations as A
 import segmentation_models_pytorch as smp
+from pytorch_lightning.callbacks import EarlyStopping
 from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 from torchmetrics.classification.iou import IoU
 
-#TODO add predict and anothers steps into model
-#TODO optimizer plateue
 
-
-
-# TODO gin-config (gin.register, gin external configurable)
+# TODO hydra!
+# TODO poetry instead of -r requirements.txt
 DIR_PATH = "/home/eduard_kustov/data/"
 BATCH_SIZE = (37, 50, 55)
 TEST_TRANSFORMS = A.Compose(
@@ -45,6 +43,7 @@ MODEL = smp.DeepLabV3Plus(
 )
 OPTIMIZER = Adam
 LR = 1e-2
-LOSS = DiceLoss(mode='multiclass') #TODO add focal loss
+LOSS = DiceLoss(mode='multiclass') #TODO + FocalLoss(mode='multiclass')
 METRIC = IoU(num_classes=N_CLASSES)
 SCHEDULER = ReduceLROnPlateau
+CALLBACKS = [EarlyStopping('val_loss', patience=5)]

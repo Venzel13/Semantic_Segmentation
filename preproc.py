@@ -1,8 +1,8 @@
+from multiprocessing import cpu_count
 from typing import Dict, Tuple, Optional
 
 import albumentations as A
 import cv2
-import gin
 import numpy as np
 import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
@@ -13,7 +13,8 @@ from utils import get_img_mask_paths
 
 
 class Leaf(Dataset):
-    def __init__(self, img_paths: np.ndarray, mask_paths: np.ndarray, transform: Optional[A.Compose] = None):
+    def __init__(self, img_paths: np.ndarray, mask_paths: np.ndarray,
+                 transform: Optional[A.Compose] = None):
         self.img_paths = img_paths
         self.mask_paths = mask_paths
         self.transform = transform
@@ -35,23 +36,27 @@ class Leaf(Dataset):
 
 
 class LeafDataModule(pl.LightningDataModule):
-    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = TRANSFORMS, bs: Tuple[int, int, int] = BATCH_SIZE):
+    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = TRANSFORMS,
+                 bs: Tuple[int, int, int] = BATCH_SIZE, n_workers: int = cpu_count()):
         super().__init__()
         self.dirpath = dirpath
         self.transforms = transforms
         self.bs = bs
+        self.n_workers = n_workers
 
     def setup(self, stage) -> None:
         img_paths = {}
         mask_paths = {}
 
-        img_paths['train'], img_paths['test'], mask_paths['train'], mask_paths['test'] = train_test_split(
+        (img_paths['train'], img_paths['test'],mask_paths['train'],
+         mask_paths['test']) = train_test_split(
             get_img_mask_paths(self.dirpath, 'images'),
             get_img_mask_paths(self.dirpath, 'masks'),
             test_size=0.1,
             random_state=17
         )
-        img_paths['train'], img_paths['val'], mask_paths['train'], mask_paths['val'] = train_test_split(
+        (img_paths['train'], img_paths['val'], mask_paths['train'],
+         mask_paths['val']) = train_test_split(
             img_paths['train'],
             mask_paths['train'],
             test_size=0.1,
@@ -73,7 +78,7 @@ class LeafDataModule(pl.LightningDataModule):
             shuffle=True,
             drop_last=True,
             pin_memory=True,
-            num_workers=16 #TODO!!!!!!!!!!!!!!!!!!!!!!!!!!!!! multiprocessing.cpu_count()
+            num_workers=self.n_workers
         )
         return train
 
@@ -82,7 +87,7 @@ class LeafDataModule(pl.LightningDataModule):
             self.datasets['val'],
             batch_size=self.bs[1],
             shuffle=False,
-            num_workers=16
+            num_workers=self.n_workers
         )
         return val
 
@@ -91,15 +96,9 @@ class LeafDataModule(pl.LightningDataModule):
             self.datasets['test'],
             batch_size=self.bs[2],
             shuffle=False,
-            num_workers=16
+            num_workers=self.n_workers
         )
         return test
 
     def predict_dataloader(self) -> DataLoader:
-        predict = DataLoader(
-            self.datasets['test'],
-            batch_size=self.bs[2],
-            shuffle=False,
-            num_workers=16
-        )
-        return predict
+        return self.test_dataloader()

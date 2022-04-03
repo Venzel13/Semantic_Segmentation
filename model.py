@@ -1,13 +1,13 @@
 from typing import Tuple
 
-import gin
 import pytorch_lightning as pl
 import torch
 from config import MODEL, OPTIMIZER, LR, LOSS, METRIC, SCHEDULER
 
 
 class LeafModule(pl.LightningModule):
-    def __init__(self, model=MODEL, lr=LR, loss=LOSS, metric=METRIC, optimizer=OPTIMIZER, scheduler=SCHEDULER):
+    def __init__(self, model=MODEL, lr=LR, loss=LOSS, metric=METRIC,
+                 optimizer=OPTIMIZER, scheduler=SCHEDULER):
         super().__init__()
         self.model = model
         self.lr = lr
@@ -44,8 +44,13 @@ class LeafModule(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.lr)
-        lr_scheduler = self.scheduler(optimizer) #TODO config with params for each param **kwargs
-        return optimizer, lr_scheduler
+        scheduler = self.scheduler(optimizer) #TODO config with params for each param **kwargs
+        # return [optimizer], [lr_scheduler]
+        return {
+            "optimizer": optimizer,
+            "lr_scheduler": scheduler,
+            "monitor": "val_loss"
+        }
 
     def step(self, batch: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         images, masks = batch

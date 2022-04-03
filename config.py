@@ -1,6 +1,6 @@
 import albumentations as A
 import segmentation_models_pytorch as smp
-from pytorch_lightning.callbacks import EarlyStopping
+from pytorch_lightning.callbacks import EarlyStopping, ModelCheckpoint
 from segmentation_models_pytorch.losses import DiceLoss, FocalLoss
 from torch.optim import Adam
 from torch.optim.lr_scheduler import ReduceLROnPlateau
@@ -9,7 +9,7 @@ from torchmetrics.classification.iou import IoU
 
 # TODO hydra!
 # TODO poetry instead of -r requirements.txt
-DIR_PATH = "/home/eduard_kustov/data/"
+DATA_PATH = "/home/eduard_kustov/data/"
 BATCH_SIZE = (37, 50, 55)
 TEST_TRANSFORMS = A.Compose(
     [
@@ -46,4 +46,11 @@ LR = 1e-4
 LOSS = DiceLoss(mode='multiclass') #TODO + FocalLoss(mode='multiclass')
 METRIC = IoU(num_classes=N_CLASSES)
 SCHEDULER = ReduceLROnPlateau
-CALLBACKS = [EarlyStopping('val_loss', patience=5)]
+CALLBACKS = [
+    EarlyStopping(monitor='val_loss', patience=5),
+    ModelCheckpoint(
+        monitor='val_loss',
+        save_top_k=1,
+        every_n_epochs=1,
+    )
+]

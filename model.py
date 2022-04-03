@@ -45,7 +45,6 @@ class LeafModule(pl.LightningModule):
     def configure_optimizers(self):
         optimizer = self.optimizer(self.parameters(), lr=self.lr)
         scheduler = self.scheduler(optimizer) #TODO config with params for each param **kwargs
-        # return [optimizer], [lr_scheduler]
         return {
             "optimizer": optimizer,
             "lr_scheduler": scheduler,

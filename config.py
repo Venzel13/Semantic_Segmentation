@@ -42,7 +42,7 @@ MODEL = smp.DeepLabV3Plus(
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
-LR = 1e-2
+LR = 1e-4
 LOSS = DiceLoss(mode='multiclass') #TODO + FocalLoss(mode='multiclass')
 METRIC = IoU(num_classes=N_CLASSES)
 SCHEDULER = ReduceLROnPlateau

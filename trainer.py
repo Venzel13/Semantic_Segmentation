@@ -15,5 +15,5 @@ trainer = pl.Trainer(
 )
 trainer.fit(model, data)
 
-#TODO trainer.test(model, data) #automatically load best_model #or choose best_path!! ckpt_path='best'
+#TODO trainer.test(model, data, ckpt_path='best')
 #TODO from argparse import ArgumentParser

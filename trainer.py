@@ -8,7 +8,7 @@ from config import DIR_PATH, CALLBACKS
 model = LeafModule()
 data = LeafDataModule(DIR_PATH)
 trainer = pl.Trainer(
-    # gpus=1,
+    gpus=1,
     callbacks = CALLBACKS,
     detect_anomaly=True,
     log_every_n_steps = 1,

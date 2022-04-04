@@ -10,6 +10,7 @@ from torchmetrics.classification.iou import IoU
 # TODO hydra!
 # TODO poetry instead of -r requirements.txt
 DATA_PATH = "/home/eduard_kustov/data/"
+CHECKPOINT_PATH = '/home/eduard_kustov/segmentation/lightning_logs/version_2/checkpoints/epoch=31-step=383.ckpt'
 BATCH_SIZE = (37, 50, 55)
 TEST_TRANSFORMS = A.Compose(
     [

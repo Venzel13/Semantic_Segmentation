@@ -1,16 +1,24 @@
-import os
-os.chdir("segmentation")
-import pytorch_lightning as pl
-from pytorch_lightning.callbacks import ModelCheckpoint
+from typing import Dict, Literal, Tuple, Union
 
-from config import DATA_PATH
+import pytorch_lightning as pl
+import torch
+
 from model import LeafModule
 from preproc import LeafDataModule
 
-log = '/home/eduard_kustov/segmentation/lightning_logs/version_2/checkpoints/epoch=31-step=383.ckpt'
 
-model = LeafModule.load_from_checkpoint(log)
-data = LeafDataModule(DATA_PATH)
-trainer = pl.Trainer()
-trainer.test(model, data)
-#trainer.predict
+def make_inference(data_path:str, checkpoint_path:str,
+                   stage: Literal['test', 'predict'] = 'predict') \
+                   -> Union[Tuple[torch.Tensor, torch.Tensor], Dict[str, float]]:
+    assert stage in {'test', 'predict'}
+    model = LeafModule.load_from_checkpoint(checkpoint_path)
+    data = LeafDataModule(data_path)
+    trainer = pl.Trainer(enable_checkpointing=False)
+    
+    if stage == 'test':
+        score = trainer.test(model, data)
+        return score[0]
+
+    pred = trainer.predict(model, data)
+    pred, mask = pred[0]
+    return pred, mask

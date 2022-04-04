@@ -13,6 +13,5 @@ trainer = pl.Trainer(
     log_every_n_steps=12,
 )
 trainer.fit(model, data)
-
-#TODO trainer.test(model, data, ckpt_path='best')
+#TODO вынести параметры pl.Trainer в config
 #TODO from argparse import ArgumentParser

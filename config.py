@@ -34,17 +34,15 @@ TRANSFORMS = {
     'test': TEST_TRANSFORMS
 }
 N_CLASSES = 2
-N_CHANNELS = 3
-ENCODER_NAME = 'resnet101'
 MODEL = smp.DeepLabV3Plus(
-    encoder_name=ENCODER_NAME,
+    encoder_name='resnet101',
     encoder_weights='imagenet',
-    in_channels=N_CHANNELS,
+    in_channels=3,
     classes=N_CLASSES,
 )
 OPTIMIZER = Adam
 LR = 1e-4
-LOSS = DiceLoss(mode='multiclass') #TODO + FocalLoss(mode='multiclass')
+LOSS = DiceLoss(mode='multiclass')
 METRIC = IoU(num_classes=N_CLASSES)
 SCHEDULER = ReduceLROnPlateau
 CALLBACKS = [

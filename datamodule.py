@@ -1,5 +1,4 @@
-from multiprocessing import cpu_count
-from typing import Dict, Tuple, Optional
+from typing import Optional
 
 import albumentations as A
 import cv2
@@ -8,7 +7,6 @@ import pytorch_lightning as pl
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader, Dataset
 
-from config import TRANSFORMS, BATCH_SIZE
 from utils import get_img_mask_paths
 
 
@@ -22,7 +20,7 @@ class Leaf(Dataset):
     def __len__(self) -> int:
         return len(self.img_paths)
 
-    def __getitem__(self, sample) -> Tuple[np.ndarray, np.ndarray]:
+    def __getitem__(self, sample) -> tuple[np.ndarray, np.ndarray]:
         image = cv2.imread(self.img_paths[sample])
         mask = cv2.imread(self.mask_paths[sample], cv2.IMREAD_GRAYSCALE)
         _, mask = cv2.threshold(mask, 0, 1, cv2.THRESH_BINARY)
@@ -36,12 +34,12 @@ class Leaf(Dataset):
 
 
 class LeafDataModule(pl.LightningDataModule):
-    def __init__(self, dirpath: str, transforms: Dict[str, A.Compose] = TRANSFORMS,
-                 bs: Tuple[int, int, int] = BATCH_SIZE, n_workers: int = cpu_count()):
+    def __init__(self, data_path: str, transforms: dict[str, A.Compose],
+                 batch_size: dict[str, int], n_workers: int):
         super().__init__()
-        self.dirpath = dirpath
+        self.data_path = data_path
         self.transforms = transforms
-        self.bs = bs
+        self.batch_size = batch_size
         self.n_workers = n_workers
 
     def setup(self, stage) -> None:
@@ -50,8 +48,8 @@ class LeafDataModule(pl.LightningDataModule):
 
         (img_paths['train'], img_paths['test'],mask_paths['train'],
          mask_paths['test']) = train_test_split(
-            get_img_mask_paths(self.dirpath, 'images'),
-            get_img_mask_paths(self.dirpath, 'masks'),
+            get_img_mask_paths(self.data_path, 'images'),
+            get_img_mask_paths(self.data_path, 'masks'),
             test_size=0.1,
             random_state=17
         )
@@ -74,7 +72,7 @@ class LeafDataModule(pl.LightningDataModule):
     def train_dataloader(self) -> DataLoader:
         train = DataLoader(
             self.datasets['train'],
-            batch_size=self.bs[0],
+            batch_size=self.batch_size['train'],
             shuffle=True,
             drop_last=True,
             pin_memory=True,
@@ -85,7 +83,7 @@ class LeafDataModule(pl.LightningDataModule):
     def val_dataloader(self) -> DataLoader:
         val = DataLoader(
             self.datasets['val'],
-            batch_size=self.bs[1],
+            batch_size=self.batch_size['val'],
             shuffle=False,
             num_workers=self.n_workers
         )
@@ -94,7 +92,7 @@ class LeafDataModule(pl.LightningDataModule):
     def test_dataloader(self) -> DataLoader:
         test = DataLoader(
             self.datasets['test'],
-            batch_size=self.bs[2],
+            batch_size=self.batch_size['test'],
             shuffle=False,
             num_workers=self.n_workers
         )

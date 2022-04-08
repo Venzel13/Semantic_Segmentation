@@ -1,20 +1,16 @@
-from typing import Tuple
-
 import pytorch_lightning as pl
 import torch
-from config import MODEL, OPTIMIZER, LR, LOSS, METRIC, SCHEDULER
 
 
 class LeafModule(pl.LightningModule):
-    def __init__(self, model=MODEL, lr=LR, loss=LOSS, metric=METRIC,
-                 optimizer=OPTIMIZER, scheduler=SCHEDULER):
+    def __init__(self, model, loss, metric, optimizer, scheduler, monitor):
         super().__init__()
         self.model = model
-        self.lr = lr
         self.loss = loss
         self.metric = metric
         self.optimizer = optimizer
         self.scheduler = scheduler
+        self.monitor = monitor
 
     def forward(self, images: torch.Tensor) -> torch.Tensor:
         images = images.permute(0, 3, 1, 2)
@@ -37,21 +33,20 @@ class LeafModule(pl.LightningModule):
         self.log('test_loss', loss)
         self.log('test_metric', metric)
 
-    def predict_step(self, predict_batch: torch.Tensor, batch_idx) -> Tuple[torch.Tensor, torch.Tensor]:
+    def predict_step(self, predict_batch: torch.Tensor,
+                     batch_idx) -> tuple[torch.Tensor, torch.Tensor]:
         images, masks = predict_batch
         pred = self(images).argmax(1)
         return pred, masks
 
     def configure_optimizers(self):
-        optimizer = self.optimizer(self.parameters(), lr=self.lr)
-        scheduler = self.scheduler(optimizer)
         return {
-            "optimizer": optimizer,
-            "lr_scheduler": scheduler,
-            "monitor": "val_loss"
+            "optimizer": self.optimizer,
+            "lr_scheduler": self.scheduler,
+            "monitor": self.monitor
         }
 
-    def step(self, batch: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
+    def step(self, batch: torch.Tensor) -> tuple[torch.Tensor, torch.Tensor]:
         images, masks = batch
         masks = masks.long()
         logits = self(images)

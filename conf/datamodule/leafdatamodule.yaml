@@ -1,0 +1,37 @@
+_target_: datamodule.LeafDataModule
+data_path: ${general.data_path}
+transforms:
+  train:
+    _target_: albumentations.Compose
+    transforms:
+    - _target_: albumentations.SmallestMaxSize
+      max_size: 256
+    - _target_: albumentations.CenterCrop
+      height: 256
+      width: 256
+    - _target_: albumentations.HorizontalFlip
+      p: 0.5
+    - _target_: albumentations.VerticalFlip
+      p: 0.5
+    - _target_: albumentations.RandomBrightnessContrast
+      p: 0.1
+    - _target_: albumentations.Rotate
+      limit: 90
+    - _target_: albumentations.Normalize
+  val:
+    _target_: albumentations.Compose
+    transforms:
+    - _target_: albumentations.SmallestMaxSize
+      max_size: 256
+    - _target_: albumentations.CenterCrop
+      height: 256
+      width: 256
+    - _target_: albumentations.Normalize
+  test:
+    ${datamodule.transforms.val}
+batch_size:
+  train: 37
+  val: 50
+  test: 55
+n_workers:
+  _target_: multiprocessing.cpu_count

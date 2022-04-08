@@ -1,0 +1,11 @@
+defaults:
+- module: leafmodule
+- datamodule: leafdatamodule
+- trainer: leaftrainer
+- inference: leafinference
+
+general:
+  n_classes: 2
+  n_channels: 3
+  monitor: val_loss 
+  data_path: /home/eduard_kustov/data/

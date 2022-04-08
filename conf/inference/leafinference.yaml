@@ -1,0 +1,3 @@
+data_path: ${general.data_path}
+best_model_path: /home/eduard_kustov/segmentation/lightning_logs/version_2/checkpoints/epoch=31-step=383.ckpt
+stage: predict

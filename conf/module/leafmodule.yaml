@@ -1,0 +1,19 @@
+_target_: module.LeafModule
+model:
+  _target_: segmentation_models_pytorch.DeepLabV3Plus
+  encoder_name: resnet101
+  encoder_weights: imagenet
+  in_channels: ${general.n_channels}
+  classes: ${general.n_classes}
+loss:
+  _target_: segmentation_models_pytorch.losses.DiceLoss
+  mode: multiclass
+metric:
+  _target_: torchmetrics.classification.iou.IoU
+  num_classes: ${general.n_classes}
+optimizer:
+  _target_: torch.optim.Adam
+  lr: 0.0001
+scheduler:
+  _target_: torch.optim.lr_scheduler.ReduceLROnPlateau
+monitor: ${general.monitor}

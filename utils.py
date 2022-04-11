@@ -1,4 +1,4 @@
-from os import listdir
+from pathlib import Path
 from typing import Literal
 
 import matplotlib.pyplot as plt
@@ -6,14 +6,15 @@ import numpy as np
 import pytorch_lightning as pl
 import torch
 
-from omegaconf import DictConfig
 from hydra.utils import instantiate
+from omegaconf import DictConfig
 
 
-def get_img_mask_paths(dirname: str, fold: Literal['images', 'masks']) -> np.ndarray:
+def get_img_mask_paths(dirname: str, fold: Literal['images', 'masks']) -> list[str]:
     assert fold in {'images', 'masks'}
-    paths = dirname + fold + '/' + np.array(listdir(dirname + fold), dtype='object')
-    return np.sort(paths)
+    paths = sorted(Path(dirname).joinpath(fold).iterdir())
+    paths = [str(path) for path in paths]
+    return paths
 
 
 def instantiate_objects(cfg: DictConfig) -> \
